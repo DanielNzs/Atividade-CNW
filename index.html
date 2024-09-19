@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de CEP e Endereço</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1507120878967-df9e795460fe');
+            background-size: cover;
+            background-position: center;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: rgba(76, 175, 80, 0.9);
+            padding: 15px;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 20px;
+            padding: 14px 20px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #45a049;
+            color: white;
+        }
+
+        /* Main container */
+        .container {
+            margin-top: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .content {
+            background-color: white;
+            padding: 20px;
+            width: 50%;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            backdrop-filter: blur(5px);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: calc(100% - 10px);
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Section titles */
+        h1, h2 {
+            color: #333;
+        }
+
+        /* Results history */
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+
+        li a {
+            text-decoration: none;
+            color: #4CAF50;
+        }
+
+        li a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <a href="#cep-section">Pesquisar CEP</a>
+        <a href="#endereco-section">Buscar Endereço</a>
+        <a href="#historico-section">Histórico</a>
+    </div>
+
+    <!-- Main container -->
+    <div class="container" id="home">
+        <div class="content" id="cep-section">
+            <h1>Consultar CEP</h1>
+
+            <!-- Formulário para entrada de CEP -->
+            <div class="form-group">
+                <label for="cep">Digite o CEP</label>
+                <input type="text" id="cep" name="cep" maxlength="9" placeholder="00000-000" />
+            </div>
+
+            <!-- Botão para pesquisar CEP -->
+            <button onclick="PesqCep()">Pesquisar CEP</button>
+
+            <!-- Exibindo detalhes do endereço -->
+            <div class="form-group">
+                <label>Estado</label>
+                <input name="uf" type="text" id="uf" disabled />
+            </div>
+            <div class="form-group">
+                <label>Cidade</label>
+                <input name="cidade" type="text" id="cidade" disabled />
+            </div>
+            <div class="form-group">
+                <label>Bairro</label>
+                <input name="bairro" type="text" id="bairro" disabled />
+            </div>
+            <div class="form-group">
+                <label>Rua</label>
+                <input name="rua" type="text" id="rua" disabled />
+            </div>
+            <div class="form-group">
+                <label>IBGE</label>
+                <input name="ibge" type="text" id="ibge" disabled />
+            </div>
+            <button onclick="ClearForm()">Limpar</button>
+        </div>
+
+        <!-- Formulário de busca por endereço -->
+        <div class="content" id="endereco-section">
+            <h2>Buscar CEP por Endereço</h2>
+
+            <!-- Formulário de busca pelo endereço -->
+            <div class="form-group">
+                <label for="uf_busca">Estado (UF)</label>
+                <input type="text" id="uf_busca" maxlength="2" placeholder="Ex: SP" />
+            </div>
+            <div class="form-group">
+                <label for="cidade_busca">Cidade</label>
+                <input type="text" id="cidade_busca" placeholder="Ex: São Paulo" />
+            </div>
+            <div class="form-group">
+                <label for="bairro_busca">Bairro</label>
+                <input type="text" id="bairro_busca" placeholder="Ex: Centro" />
+            </div>
+            <div class="form-group">
+                <label for="log_busca">Logradouro (Rua)</label>
+                <input type="text" id="log_busca" placeholder="Ex: Av. Paulista" />
+            </div>
+            <button onclick="buscaPorEndereco()">Buscar CEP</button>
+        </div>
+
+        <!-- Histórico de pesquisas -->
+        <div class="content" id="historico-section">
+            <h2>Histórico de Pesquisas de CEP</h2>
+            <ul id="historico"></ul>
+            <button onclick="ClearHist()">Limpar Histórico</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2024 Consulta CEP - Todos os direitos reservados.</p>
+    </div>
+
+    <script>
+        // Função pra buscar CEP pelo número
+        function PesqCep() {
+            var cep = document.getElementById('cep').value.replace(/\D/g, '');
+            if (cep != "") {
+                var validacep = /^[0-9]{8}$/;
+                if (validacep.test(cep)) {
+                    document.getElementById('rua').value = "...";
+                    document.getElementById('bairro').value = "...";
+                    document.getElementById('cidade').value = "...";
+                    document.getElementById('uf').value = "...";
+                    document.getElementById('ibge').value = "...";
+
+                    var script = document.createElement('script');
+                    script.src = 'https://viacep.com.br/ws/' + cep + '/json/?callback=meu_callback';
+                    document.body.appendChild(script);
+                } else {
+                    ClearForm();
+                    alert("Formato de CEP inválido.");
+                }
+            } else {
+                ClearForm();
+            }
+        }
+
+        // Função pra processar a resposta do CEP
+        function meu_callback(conteudo) {
+            if (!("erro" in conteudo)) {
+                document.getElementById('rua').value = conteudo.logradouro;
+                document.getElementById('bairro').value = conteudo.bairro;
+                document.getElementById('cidade').value = conteudo.localidade;
+                document.getElementById('uf').value = conteudo.uf;
+                document.getElementById('ibge').value = conteudo.ibge;
+
+                salvarHistorico(document.getElementById('cep').value);
+            } else {
+                ClearForm();
+                alert("CEP não encontrado.");
+            }
+        }
+
+        // Função pra limpar o formulário
+        function ClearForm() {
+            document.getElementById('cep').value = "";
+            document.getElementById('rua').value = "";
+            document.getElementById('bairro').value = "";
+            document.getElementById('cidade').value = "";
+            document.getElementById('uf').value = "";
+            document.getElementById('ibge').value = "";
+        }
+
+        // Função pra buscar CEP com base no endereço
+        function buscaPorEndereco() {
+            var uf = document.getElementById('uf_busca').value;
+            var cidade = document.getElementById('cidade_busca').value;
+            var logradouro = document.getElementById('log_busca').value;
+            if (uf && cidade && logradouro) {
+                var url = 'https://viacep.com.br/ws/' + uf + '/' + cidade + '/' + logradouro + '/json/';
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            let ceps = data.map(item => item.cep).join(', ');
+                            alert('CEP(s) encontrado(s): ' + ceps);
+                            salvarHistorico(ceps);
+                        } else {
+                            alert("Endereço não encontrado.");
+                        }
+                    })
+                    .catch(error => {
+                        alert("Erro ao consultar endereço.");
+                    });
+            } else {
+                alert("Preencha todos os campos do endereço, por favor.");
+            }
+        }
+
+        // Função pra salvar o histórico de pesquisas
+        function salvarHistorico(cep) {
+            let historico = JSON.parse(localStorage.getItem('historico')) || [];
+            if (!historico.includes(cep)) {
+                historico.push(cep);
+                localStorage.setItem('historico', JSON.stringify(historico));
+            }
+            exibirHistorico();
+        }
+
+        // Função pra mostrar o histórico de pesquisas
+        function exibirHistorico() {
+            let historico = JSON.parse(localStorage.getItem('historico')) || [];
+            let historicoElement = document.getElementById('historico');
+            historicoElement.innerHTML = "";
+            historico.forEach(function(cep) {
+                let li = document.createElement('li');
+                li.textContent = cep;
+                historicoElement.appendChild(li);
+            });
+        }
+
+        // Função pra limpar o histórico de pesquisas
+        function ClearHist() {
+            localStorage.removeItem('historico');
+            exibirHistorico();
+        }
+    </script>
+</body>
+</html>
